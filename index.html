@@ -2,70 +2,136 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b3d91">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#06142e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef5ff" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hidrata">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="stylesheet" href="/style.css">
 <title>Hidrata</title>
-<style>
-  :root { --bg:#071a3a; --card:#0f2a5c; --agua:#4fc3f7; --txt:#e8f1ff; --sub:#8fa8d1; --alerta:#ffb74d; }
-  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { margin:0; font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--txt);
-         padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px); min-height:100vh; }
-  h1 { font-size:20px; margin:0 0 16px; display:flex; justify-content:space-between; align-items:center; }
-  button { font:inherit; border:0; border-radius:14px; cursor:pointer; color:var(--txt); }
-  .icone { background:var(--card); width:40px; height:40px; font-size:18px; }
-  .copo { position:relative; width:180px; height:240px; margin:8px auto 20px; border:3px solid var(--agua);
-          border-radius:12px 12px 40px 40px; overflow:hidden; }
-  .nivel { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(#4fc3f7cc,#0288d1); transition:height .6s ease; }
-  .copo span { position:absolute; inset:0; display:grid; place-items:center; font-size:30px; font-weight:700; text-shadow:0 2px 6px #0008; }
-  .resumo { text-align:center; color:var(--sub); margin-bottom:6px; }
-  .status { text-align:center; padding:10px; border-radius:12px; margin-bottom:16px; font-size:14px; background:var(--card); }
-  .status.atras { background:#5a3a0a; color:var(--alerta); }
-  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px; }
-  .grid button { background:var(--card); padding:16px 0; font-size:16px; font-weight:600; }
-  .grid button:active { transform:scale(.96); }
-  .linha { display:flex; gap:10px; margin-bottom:16px; }
-  .linha input { flex:1; }
-  input { font:inherit; background:var(--card); color:var(--txt); border:1px solid #2a4a85; border-radius:12px; padding:12px; width:100%; }
-  .primario { background:#0288d1; padding:12px 16px; font-weight:600; }
-  ul { list-style:none; padding:0; margin:0; }
-  li { display:flex; justify-content:space-between; padding:10px 4px; border-bottom:1px solid #1d3a70; color:var(--sub); }
-  li button { background:none; color:#ef9a9a; }
-  dialog { background:var(--card); color:var(--txt); border:0; border-radius:18px; width:min(92vw,400px); }
-  dialog::backdrop { background:#000a; }
-  label { display:block; font-size:13px; color:var(--sub); margin:12px 0 4px; }
-</style>
 </head>
 <body>
-  <h1>💧 Hidrata <span><button class="icone" id="btnNotif" title="Notificações">🔔</button> <button class="icone" id="btnCfg" title="Configurações">⚙️</button></span></h1>
+<main id="app">
+  <header class="topo">
+    <div>
+      <p class="saudacao" id="saudacao">Boa noite</p>
+      <h1>Hidrata</h1>
+    </div>
+    <div class="acoes-topo">
+      <button class="btn-icone" id="btnNotif" aria-label="Notificações">
+        <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="ponto" id="pontoNotif"></span>
+      </button>
+      <button class="btn-icone" id="btnCfg" aria-label="Configurações">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
 
-  <div class="copo"><div class="nivel" id="nivel"></div><span id="pct">0%</span></div>
-  <div class="resumo" id="resumo">0 / 2000 ml</div>
-  <div class="status" id="status">—</div>
+  <!-- Progresso -->
+  <section class="hero">
+    <div class="orbe" id="orbe">
+      <svg class="anel" viewBox="0 0 220 220">
+        <circle cx="110" cy="110" r="100" class="anel-fundo"/>
+        <circle cx="110" cy="110" r="100" class="anel-ritmo" id="anelRitmo"/>
+        <circle cx="110" cy="110" r="100" class="anel-prog" id="anelProg"/>
+      </svg>
+      <div class="liquido">
+        <div class="agua" id="agua">
+          <svg class="onda o1" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20 Q50 0 100 20 T200 20 T300 20 T400 20 V40 H0Z"/></svg>
+          <svg class="onda o2" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20 Q50 40 100 20 T200 20 T300 20 T400 20 V40 H0Z"/></svg>
+        </div>
+      </div>
+      <div class="centro">
+        <strong id="valor">0</strong>
+        <span id="deMeta">de 2000 ml</span>
+      </div>
+    </div>
+    <div class="chip" id="status"><span class="chip-dot"></span><span id="statusTxt">—</span></div>
+  </section>
 
-  <div class="grid">
-    <button data-ml="150">+150</button><button data-ml="250">+250</button><button data-ml="350">+350</button>
-    <button data-ml="500">+500</button><button data-ml="750">+750</button><button data-ml="1000">+1 L</button>
+  <!-- Stats -->
+  <section class="stats">
+    <div class="stat"><span class="stat-lbl">Falta</span><strong id="stFalta">—</strong></div>
+    <div class="stat"><span class="stat-lbl">Ritmo agora</span><strong id="stRitmo">—</strong></div>
+    <div class="stat"><span class="stat-lbl">Sequência</span><strong id="stStreak">—</strong></div>
+  </section>
+
+  <!-- Adicionar -->
+  <section class="cartao">
+    <div class="cartao-topo"><h2>Adicionar</h2><button class="link" id="btnOutro">Outro valor</button></div>
+    <div class="rapidos" id="rapidos"></div>
+  </section>
+
+  <!-- Semana -->
+  <section class="cartao">
+    <div class="cartao-topo"><h2>Últimos 7 dias</h2><span class="sub" id="mediaSemana"></span></div>
+    <div class="barras" id="barras"></div>
+  </section>
+
+  <!-- Histórico -->
+  <section class="cartao">
+    <div class="cartao-topo"><h2>Hoje</h2><span class="sub" id="qtdRegistros"></span></div>
+    <ul class="lista" id="historico"></ul>
+  </section>
+</main>
+
+<!-- Folha: valor customizado -->
+<div class="folha-fundo" id="fundoOutro"></div>
+<section class="folha" id="folhaOutro" aria-hidden="true">
+  <div class="alca"></div>
+  <h3>Quanto você bebeu?</h3>
+  <div class="campo-grande"><input id="inpOutro" type="number" inputmode="numeric" placeholder="0"><span>ml</span></div>
+  <div class="ajustes"><button data-aj="-50">−50</button><button data-aj="50">+50</button><button data-aj="100">+100</button></div>
+  <button class="primario" id="confOutro">Adicionar</button>
+</section>
+
+<!-- Folha: configurações -->
+<div class="folha-fundo" id="fundoCfg"></div>
+<section class="folha" id="folhaCfg" aria-hidden="true">
+  <div class="alca"></div>
+  <h3>Configurações</h3>
+  <div class="grupo">
+    <label class="linha-cfg"><span>Meta diária</span><span class="passo"><button data-p="meta" data-d="-100">−</button><b id="vMeta"></b><button data-p="meta" data-d="100">+</button></span></label>
+    <button class="link pequeno" id="calcMeta">Calcular pelo meu peso</button>
   </div>
-  <div class="linha"><input id="custom" type="number" inputmode="numeric" placeholder="Outro valor (ml)"><button class="primario" id="btnAdd">Adicionar</button></div>
+  <div class="grupo">
+    <label class="linha-cfg"><span>Acordo às</span><input type="time" id="cInicio" step="1800"></label>
+    <label class="linha-cfg"><span>Durmo às</span><input type="time" id="cFim" step="1800"></label>
+  </div>
+  <div class="grupo">
+    <p class="grupo-tit">Lembretes</p>
+    <label class="linha-cfg"><span>Avisar se atrasado em</span><span class="passo"><button data-p="tol" data-d="-5">−</button><b id="vTol"></b><button data-p="tol" data-d="5">+</button></span></label>
+    <label class="linha-cfg"><span>Intervalo mínimo</span><span class="passo"><button data-p="int" data-d="-15">−</button><b id="vInt"></b><button data-p="int" data-d="15">+</button></span></label>
+    <button class="secundario" id="testeNotif">Enviar notificação de teste</button>
+  </div>
+  <div class="grupo">
+    <p class="grupo-tit">Copos rápidos (ml, separados por vírgula)</p>
+    <input id="cCopos" class="inp" inputmode="numeric">
+  </div>
+  <button class="primario" id="salvarCfg">Salvar</button>
+  <button class="perigo" id="zerarDia">Zerar o dia de hoje</button>
+</section>
 
-  <h3 style="font-size:15px;color:var(--sub)">Hoje</h3>
-  <ul id="historico"></ul>
+<!-- Onboarding -->
+<section class="onboarding" id="onboarding" hidden>
+  <div class="ob-conteudo">
+    <div class="ob-gota"></div>
+    <h2>Bem-vindo ao Hidrata</h2>
+    <p>Vamos definir sua meta. Uma referência comum é <b>35 ml por kg</b> de peso.</p>
+    <div class="campo-grande"><input id="obPeso" type="number" inputmode="decimal" placeholder="70"><span>kg</span></div>
+    <p class="sub" id="obSugestao">Meta sugerida: 2450 ml</p>
+    <button class="primario" id="obOk">Começar</button>
+    <button class="link" id="obPular">Usar 2000 ml</button>
+  </div>
+</section>
 
-  <dialog id="cfg">
-    <form method="dialog">
-      <h3 style="margin-top:0">Configurações</h3>
-      <label>Meta diária (ml)</label><input id="cMeta" type="number" inputmode="numeric">
-      <label>Acordo às (hora)</label><input id="cInicio" type="number" min="0" max="23">
-      <label>Durmo às (hora)</label><input id="cFim" type="number" min="1" max="24">
-      <label>Avisar quando estiver atrás em (% da meta)</label><input id="cTol" type="number" min="5" max="80">
-      <label>Intervalo mínimo entre lembretes (min)</label><input id="cInt" type="number" min="15">
-      <div class="linha" style="margin-top:18px"><button value="cancel" class="icone" style="flex:1">Cancelar</button><button class="primario" id="btnSalvar" value="ok" style="flex:1">Salvar</button></div>
-    </form>
-  </dialog>
+<div class="toast" id="toast"><span id="toastTxt"></span><button id="toastAcao">Desfazer</button></div>
+<canvas id="confete"></canvas>
 
 <script src="/app.js"></script>
 </body>

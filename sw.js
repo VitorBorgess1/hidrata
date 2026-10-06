@@ -1,6 +1,6 @@
 // Service Worker — offline + lembretes
-const CACHE = 'hidrata-v1';
-const ASSETS = ['/', '/index.html', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'hidrata-v2';
+const ASSETS = ['/', '/index.html', '/app.js', '/style.css', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 const STATE_URL = '/__state'; // estado salvo no Cache API (SW não acessa localStorage)
 
 self.addEventListener('install', e => {
@@ -8,12 +8,25 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+  e.waitUntil((async () => {
+    for (const k of await caches.keys()) {
+      if (k === CACHE) continue;
+      const st = await (await caches.open(k)).match(STATE_URL);
+      if (st) await (await caches.open(CACHE)).put(STATE_URL, st);
+      await caches.delete(k);
+    }
+  })());
   self.clients.claim();
 });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+  if (new URL(e.request.url).pathname === '/__state') return;
+  // Stale-while-revalidate: abre instantâneo do cache e atualiza em segundo plano
+  e.respondWith(caches.open(CACHE).then(async c => {
+    const cached = await c.match(e.request);
+    const rede = fetch(e.request).then(r => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => cached);
+    return cached || rede;
+  }));
 });
 
 // Mesmo cálculo do app (duplicado de propósito: o SW roda isolado)
@@ -39,7 +52,7 @@ async function checar() {
   s.ultimoAviso = Date.now();
   await caches.open(CACHE).then(c => c.put(STATE_URL, new Response(JSON.stringify(s))));
   await self.registration.showNotification('💧 Hora de beber água', {
-    body: `Você está ${r.atraso} ml atrás do ritmo (${r.bebido}/${r.esperado} ml esperados até agora).`,
+    body: `Você está ${r.atraso} ml atrás do ritmo. Um copo agora te coloca de volta no jogo.`,
     icon: '/icons/icon-192.png', badge: '/icons/icon-192.png', tag: 'lembrete-agua', renotify: true
   });
 }
